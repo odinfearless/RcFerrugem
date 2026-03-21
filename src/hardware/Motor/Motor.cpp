@@ -1,0 +1,42 @@
+#include "Arduino.h"
+#include "Motor.h"
+
+Motor::Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned int minLimitPwm, unsigned int maxLimitPwm)
+    : pinA(pinA), pinB(pinB), pinPwm(pinPwm), minLimitPwm(minLimitPwm), maxLimitPwm(maxLimitPwm)
+{
+}
+void Motor::begin()
+{
+
+    pinMode(pinA, OUTPUT);
+    pinMode(pinB, OUTPUT);
+    pinMode(pinPwm, OUTPUT);
+    forward();
+}
+void Motor::forward()
+{
+    digitalWrite(pinA, LOW);
+    digitalWrite(pinB, HIGH);
+}
+void Motor::backward()
+{
+    digitalWrite(this->pinA, HIGH);
+    digitalWrite(this->pinB, LOW);
+}
+void Motor::setValue(int val)
+{
+    val = val < (int)minLimitPwm ? 0 : constrain(val, minLimitPwm, maxLimitPwm);
+    analogWrite(pinPwm, val);
+}
+unsigned int Motor::getPinA()
+{
+    return pinA;
+}
+unsigned int Motor::getPinB()
+{
+    return pinB;
+}
+unsigned int Motor::getPinPwm()
+{
+    return pinPwm;
+}
