@@ -1,8 +1,8 @@
 #include "Arduino.h"
 #include "Motor.h"
 
-Motor::Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned int minLimitPwm, unsigned int maxLimitPwm)
-    : pinA(pinA), pinB(pinB), pinPwm(pinPwm), minLimitPwm(minLimitPwm), maxLimitPwm(maxLimitPwm)
+Motor::Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned int maxLimitPwm, unsigned int pwmDeadZone)
+    : pinA(pinA), pinB(pinB), pinPwm(pinPwm), maxLimitPwm(maxLimitPwm), pwmDeadZone(pwmDeadZone)
 {
 }
 void Motor::begin()
@@ -24,8 +24,8 @@ void Motor::backward()
     digitalWrite(this->pinB, LOW);
 }
 void Motor::setValue(int val)
-{
-    val = val < (int)minLimitPwm ? 0 : constrain(val, minLimitPwm, maxLimitPwm);
+{   
+    val = val < pwmDeadZone ? 0 : constrain(val, pwmDeadZone, maxLimitPwm);
     analogWrite(pinPwm, val);
 }
 unsigned int Motor::getPinA()

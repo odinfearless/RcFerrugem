@@ -13,21 +13,22 @@
 #define MOTOR_PWM_1 7
 #define MOTOR_PWM_2 6
 
-#define SENSOR_TrigPin_F 2
-#define SENSOR_EchoPin_F 3
-
-#define SENSOR_TrigPin_B 9
-#define SENSOR_EchoPin_B 8
-#define minLimitPwm 80
+#define deadZonePwm 80
 #define maxLimitPwm 255
 
-Motor Motor_A(MOTOR_1_A, MOTOR_1_B, MOTOR_PWM_1, minLimitPwm, maxLimitPwm);
-Motor Motor_B(MOTOR_2_A, MOTOR_2_B, MOTOR_PWM_2, minLimitPwm, maxLimitPwm);
+#define SENSOR_TrigPin_FL 2
+#define SENSOR_EchoPin_FL 3
 
-SonarSensor Front_Sensor(SENSOR_TrigPin_F, SENSOR_EchoPin_F);
-SonarSensor Back_Sensor(SENSOR_TrigPin_B, SENSOR_EchoPin_B);
+#define SENSOR_TrigPin_FR 9
+#define SENSOR_EchoPin_FR 8
 
-const int limitDistance = 30;
+Motor Motor_A(MOTOR_1_A, MOTOR_1_B, MOTOR_PWM_1, maxLimitPwm, deadZonePwm);
+Motor Motor_B(MOTOR_2_A, MOTOR_2_B, MOTOR_PWM_2, maxLimitPwm, deadZonePwm);
+
+SonarSensor Front_Sensor_FL(SENSOR_TrigPin_FL, SENSOR_EchoPin_FL);
+SonarSensor Front_Sensor_FR(SENSOR_TrigPin_FR, SENSOR_EchoPin_FR);
+
+const int limitDistance = 60;
 
 void setup()
 {
@@ -35,8 +36,9 @@ void setup()
   Wire.begin();
   Wire.setClock(400000);
 
-  Front_Sensor.begin();
-  Back_Sensor.begin();
+  Front_Sensor_FL.begin();
+  Front_Sensor_FR.begin();
+
   Motor_A.begin();
   Motor_B.begin();
   delay(2000);
@@ -44,7 +46,10 @@ void setup()
 
 void readMotors()
 {
-  int motorDistanceSensor = Front_Sensor.read();
+  int fistanceFL = Front_Sensor_FL.read();
+  int fistanceFR = Front_Sensor_FR.read();
+  int motorDistanceSensor = min(fistanceFL, fistanceFR);
+
   int vlPwm = map(constrain(motorDistanceSensor, 0, limitDistance), 0, limitDistance, 0, maxLimitPwm);
 
   if (motorDistanceSensor >= limitDistance)
@@ -53,7 +58,7 @@ void readMotors()
     Motor_B.setValue(maxLimitPwm);
   }
   else
-  {    
+  {
     Motor_A.setValue(vlPwm);
     Motor_B.setValue(vlPwm);
   }

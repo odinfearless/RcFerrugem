@@ -1,7 +1,7 @@
 class Motor
 {
 public:
-    Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned int minLimitPwm, unsigned int maxLimitPwm);
+    Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned int maxLimitPwm, unsigned int pwmDeadZone);
     void forward();
     void backward();
     void setValue(int val);
@@ -16,4 +16,5 @@ private:
     unsigned int pinPwm;
     unsigned int minLimitPwm;
     unsigned int maxLimitPwm;
+    unsigned int pwmDeadZone;
 };
