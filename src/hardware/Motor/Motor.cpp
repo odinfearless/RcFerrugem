@@ -19,8 +19,8 @@ void Motor::forward()
 }
 void Motor::backward()
 {
-    digitalWrite(this->pinA, HIGH);
-    digitalWrite(this->pinB, LOW);
+    digitalWrite(pinA, HIGH);
+    digitalWrite(pinB, LOW);
 }
 
 void Motor::setValue(int val)
