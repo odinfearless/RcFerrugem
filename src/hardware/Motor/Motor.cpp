@@ -7,7 +7,6 @@ Motor::Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned
 }
 void Motor::begin()
 {
-
     pinMode(pinA, OUTPUT);
     pinMode(pinB, OUTPUT);
     pinMode(pinPwm, OUTPUT);
@@ -23,8 +22,9 @@ void Motor::backward()
     digitalWrite(this->pinA, HIGH);
     digitalWrite(this->pinB, LOW);
 }
+
 void Motor::setValue(int val)
-{   
+{
     val = val < pwmDeadZone ? 0 : constrain(val, pwmDeadZone, maxLimitPwm);
     analogWrite(pinPwm, val);
 }

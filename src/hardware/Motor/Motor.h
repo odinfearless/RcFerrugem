@@ -4,7 +4,7 @@ public:
     Motor(unsigned int pinA, unsigned int pinB, unsigned int pinPwm, unsigned int maxLimitPwm, unsigned int pwmDeadZone);
     void forward();
     void backward();
-    void setValue(int val);
+    void setValue(int val);   
     unsigned int getPinA();
     unsigned int getPinB();
     unsigned int getPinPwm();
