@@ -22,8 +22,14 @@
 #define SENSOR_TrigPin_FR 9
 #define SENSOR_EchoPin_FR 8
 
+#define SENSOR_TrigPin_BL 12
+#define SENSOR_EchoPin_BL 13
+
+#define SENSOR_TrigPin_BR 10
+#define SENSOR_EchoPin_BR 11
+
 // medida em centrimetro
-int distanceDetection = 0;
+int distanceDetection = 50;
 #define PotDistancePin A0
 #define minLimitDistance 5
 #define maxLimitDistance 80
@@ -41,6 +47,15 @@ Motor Motor_B(MOTOR_2_A, MOTOR_2_B, MOTOR_PWM_2, maxLimitPwm, deadZonePwm);
 SonarSensor Front_Sensor_FL(SENSOR_TrigPin_FL, SENSOR_EchoPin_FL);
 SonarSensor Front_Sensor_FR(SENSOR_TrigPin_FR, SENSOR_EchoPin_FR);
 
+SonarSensor Front_Sensor_BL(SENSOR_TrigPin_BL, SENSOR_EchoPin_BL);
+SonarSensor Front_Sensor_BR(SENSOR_TrigPin_BR, SENSOR_EchoPin_BR);
+
+bool isTurn = false;
+bool isBackward = false;
+bool isForward = false;
+
+#define PinMic A5
+
 void setup()
 {
   Serial.begin(115200);
@@ -50,24 +65,29 @@ void setup()
   Front_Sensor_FL.begin();
   Front_Sensor_FR.begin();
 
+  Front_Sensor_BL.begin();
+  Front_Sensor_BR.begin();
+
   Motor_A.begin();
   Motor_B.begin();
 
   pinMode(PotDistancePin, INPUT);
   pinMode(PotPwmPin, INPUT);
+  pinMode(PinMic, INPUT);
+
   delay(2000);
 }
 
 void readPots()
 {
   unsigned long currentMillis = millis();
-  /*
+
   if (currentMillis - potLeftlastMillis >= TimeReleasePots)
   {
     potLeftlastMillis = currentMillis;
     int potLeft = analogRead(PotDistancePin);
     distanceDetection = map(potLeft, 0, 1000, minLimitDistance, maxLimitDistance);
-  }*/
+  }
 
   if (currentMillis - potRightlastMillis >= TimeReleasePots)
   {
@@ -88,15 +108,15 @@ void turnRight()
   Motor_A.setValue(0);
   Motor_B.setValue(deadZonePwm);
 }
-bool turn = false;
-void readMotors()
+void forward()
 {
   int distanceFL = Front_Sensor_FL.read();
   int distanceFR = Front_Sensor_FR.read();
+
   int motorDistanceSensor = min(distanceFL, distanceFR);
 
   float speedNorm = (float)currentMaxLimitPwm / maxLimitPwm;
-  int dynamicMinDistance = 5 + (speedNorm * speedNorm) * 20;
+  int dynamicMinDistance = 10 + (speedNorm * speedNorm) * 30;
   // distância dinâmica baseada na velocidade
   int dynamicDistance = map(currentMaxLimitPwm, deadZonePwm, maxLimitPwm, minLimitDistance, distanceDetection);
 
@@ -105,7 +125,7 @@ void readMotors()
   distNorm = constrain(distNorm, 0.0, 1.0);
 
   // curva (quanto maior o expoente, mais suave no começo e mais forte no final)
-  float curva = distNorm * distNorm;
+  float curva = distNorm * distNorm * distNorm;
 
   // PWM mínimo pra não travar
   int minPwm = deadZonePwm;
@@ -119,12 +139,12 @@ void readMotors()
   {
     if (motorDistanceSensor < minLimitDistance)
     {
-      Motor_A.backward();
-      Motor_B.backward();
+      isBackward = true;
     }
-    if (!turn)
+    if (!isTurn)
     {
-      turn = true;
+      isTurn = true;
+
       if (distanceFR < distanceFL)
       {
         turnLeft();
@@ -137,25 +157,64 @@ void readMotors()
   }
   else
   {
-    turn = false;
+    isTurn = false;
+    isBackward = false;
     Motor_A.forward();
     Motor_B.forward();
     Motor_A.setValue(vlPwm);
     Motor_B.setValue(vlPwm);
   }
+}
 
-  /*
-    if (motorDistanceSensor < dynamicMinDistance)
+void backward()
+{
+  if (isForward)
+  {
+    isBackward = false;
+  }
+
+  if (isBackward)
+  {
+    int distanceBL = Front_Sensor_BL.read();
+    int distanceBR = Front_Sensor_BR.read();
+    int motorDistanceSensor = min(distanceBL, distanceBR);
+
+    Motor_A.backward();
+    Motor_B.backward();
+
+    if (motorDistanceSensor < 20)
     {
-      vlPwm = 0;
-    }
 
-    Motor_A.setValue(vlPwm);
-    Motor_B.setValue(vlPwm);*/
+      if (!isTurn)
+      {
+        isTurn = true;
+        if (distanceBR < distanceBL)
+        {
+          turnRight();
+        }
+        else
+        {
+          turnLeft();
+        }
+      }
+    }
+    else
+    {
+      isTurn = false;
+      Motor_A.setValue(deadZonePwm);
+      Motor_B.setValue(deadZonePwm);
+    }
+  }
+}
+
+void driver()
+{
+  forward();
+  backward();
 }
 
 void loop()
 {
   readPots();
-  readMotors();
+  driver();
 }
