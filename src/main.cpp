@@ -54,8 +54,6 @@ bool isTurn = false;
 bool isBackward = false;
 bool isForward = false;
 
-#define PinMic A5
-
 void setup()
 {
   Serial.begin(115200);
@@ -73,7 +71,6 @@ void setup()
 
   pinMode(PotDistancePin, INPUT);
   pinMode(PotPwmPin, INPUT);
-  pinMode(PinMic, INPUT);
 
   delay(2000);
 }
