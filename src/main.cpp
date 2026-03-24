@@ -1,5 +1,4 @@
 #include <Wire.h>
-#include <Adafruit_GFX.h>
 #include <NewPing.h>
 #include "hardware/Motor/Motor.h"
 #include "hardware/SonarSensor/SonarSensor.h"
